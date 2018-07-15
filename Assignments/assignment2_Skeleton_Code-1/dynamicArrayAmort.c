@@ -6,7 +6,7 @@
 /*	dynamicArray.c: Dynamic Array implementation. */
 #include <assert.h>
 #include <stdlib.h>
-#include "dynArray.h"
+#include "dynArrayAmort.h"
 
 struct DynArr
 {
@@ -280,18 +280,24 @@ int isEmptyDynArr(DynArr *v)
 			if reached capacity, capacity is doubled
 			val is on the top of the stack
 */
-void pushDynArr(DynArr *v, TYPE val)
+int pushDynArr(DynArr *v, TYPE val)
 {
+    int cost = 0;
     assert(v != 0);
 
         //make sure there's space
     if (v->size >= v->capacity) {
-        _dynArrSetCapacity(v,(2*v->capacity));
+        _dynArrSetCapacity(v,(v->capacity+=2));
+        cost = v->size + 1;
+    } else {
+        cost = 1;
     }
+
         //add the value
     v->data[v->size] = val;
         //increase size
     v->size++;
+    return cost;
 }
 
 /*	Returns the element at the top of the stack 

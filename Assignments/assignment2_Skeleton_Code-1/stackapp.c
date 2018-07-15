@@ -1,3 +1,8 @@
+/*
+ *Name: Mario Bocaletti
+ *Date: 7/15/18
+ */
+
 /*	stack.c: Stack application. */
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,10 +59,9 @@ int isBalanced(char* s)
 			pushDynArr(strBrace, check);
 		}
 	}
-
 		//check the parentheses
 	while (!isEmptyDynArr(parens)) {
-		check = topDynArr(parens);
+        check = topDynArr(parens);
 		popDynArr(parens);
 		if (check == '(') {
 			balanced++;
@@ -67,28 +71,30 @@ int isBalanced(char* s)
 	}
 
 	if (balanced != 0) {
-		return 1;
+		return 0;
 	}
 
 		//check the curly braces
 	while (!isEmptyDynArr(curlyBrace)) {
-		check = topDynArr(curlyBrace);
+		printf("3");
+        check = topDynArr(curlyBrace);
 		popDynArr(curlyBrace);
 		if (check == '{') {
 			balanced++;
 		}
-		else {
+		else if (check == '}') {
 			balanced--;
 		}
 	}
 
 	if (balanced != 0) {
-		return 1;
+		return 0;
 	}
+printf("\n");
 
 	//check the brackets
 	while (!isEmptyDynArr(strBrace)) {
-		check = topDynArr(strBrace);
+        check = topDynArr(strBrace);
 		popDynArr(strBrace);
 		if (check == '[') {
 			balanced++;
@@ -99,9 +105,9 @@ int isBalanced(char* s)
 	}
 	
 	if (balanced != 0) {
-		return 1;
-	} else {
 		return 0;
+	} else {
+		return 1;
 	}
 }
 
