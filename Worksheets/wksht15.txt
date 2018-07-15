@@ -1,0 +1,78 @@
+Worksheet 15: Amortized Constant Execution Time
+
+In preparation:  Read Chapter 5 to learn more about the basic abstract data types, and the introduction to the dynamic array. If you have not done so already you should complete worksheet 14, which introduces the dynamic array.
+
+In the previous worksheet you learnt about the add operation in a dynamic array. You observed that when the size was less than the capacity, the execution time was constant. But when a reallocation became necessary, execution time slowed to O(n). 
+
+This might at first seem like a very negative result, since it means that the worst case execution time for addition to a dynamic array is O(n). But the reality is not nearly so bleak. Look again at the picture that described the internal array as new elements were added to the collection.
+
+Notice that the costly reallocation of a new array occurred only once during the time that ten elements were added to the collection. If we compute the average cost, rather than the worst case cost, we will see that the dynamic array is still a relatively efficient container.
+
+To compute the average, count 1 “unit” of cost each time a value is added to the dynamic array without requiring a reallocation. When the reallocation occurs, count one “unit” of cost for each assignment performed as part of the reallocation process, plus one more for placing the new element into the newly enlarged array. How many “units” are spent in the entire process of inserting these ten elements?  What is the average “unit” cost for an insertion?
+
+Unit of cost when first value (1) is inserted is 1, because reallocation is not required. Total cost = 1.
+Unit of cost when the second value (5) is inserted is 1, because reallocation is not required. Total cost = 2.
+Unit of cost when the third value (8) is inserted is 1, because reallocation is not required. Total cost = 3.
+Unit of cost when the fourth value (9) is inserted is 1, because reallocation is not required. Total cost = 4.
+Unit of cost when the fifth value (10) is inserted is 1, because reallocation is not required. Total cost = 5.
+Unit of cost when the sixth value (11) is inserted is one unit of cost for each assignment performed as part of the reallocation process (5 total values, 1 unit of cost each, totaling 5) plus 1 for placing the new element into the newly enlarged array, which equals 6 for this step alone. Total cost = 5 (for the copy) + 1 for the new element + previous total cost (5) = 11.
+For each subsequent addition (four additional values being added), the cost is still 1 per value added, totaling 15 (11 previous values + 4 new values) once the process stops. Therefore, the average cost is (15 / 10 = 1.5).
+
+When we can bound an “average” cost of an operation in this fashion, but not bound the worst case execution time, we call it amortized constant execution time. Amortized constant execution time is often written as O(1)+, the plus sign indicating it is not a guaranteed execution time bound.
+
+Do a similar analysis for performing 25 consecutive add operations on an empty array which starts out at capacity 5, assuming that the array will double in capacity each time a new item is added to an already full dynamic array? As N (i.e., the number of add operations) grows large, under this strategy for resizing, what is the average big-oh complexity for an add operation?
+
+Following the same rules for the previous example, we know the average cost for the first 10 consecutive add operations is 1.5 (total cost 15 / 10 = 1.5). We will following the same rules to determine the average cost of 25 consecutive add operations.
+
+For 25 consecutive add operations, with a starting capacity of 5:
+Value to be added (add operation)	Unit of cost	Capacity	Spaces remaining before reallocation
+(capacity – 1)
+1st value	1	5	4
+2nd value	1	5	3
+3rd value	1	5	2
+4th value	1	5	1
+5th value	1	5	0
+6th value	5 (for the copy) + 1	10	4
+7th value	1	10	3
+8th value	1	10	2
+9th value	1	10	1
+10th value	1	10	0
+11th value	10 (for the copy) + 1	20	9
+12th value	1	20	8
+13th value	1	20	7
+14th value	1	20	6
+15th value	1	20	5
+16th value	1	20	4
+17th value	1	20	3
+18th value	1	20	2
+19th value	1	20	1
+20th value	1	20	0
+21st value	20 (for the copy) + 1	40	19
+22nd value	1	40	18
+23rd value	1	40	17
+24th value	1	40	16
+25th value	1	40	15
+Total Cost = 60
+Average Cost = 60 / 25 = 2.4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
