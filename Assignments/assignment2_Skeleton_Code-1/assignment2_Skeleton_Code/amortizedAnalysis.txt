@@ -1,0 +1,18 @@
+Name: Mario Bocaletti
+Date: 7/15/18
+
+1. How many cost units are spent in the entire process of performing 40 consecutive push operations on an empty array which starts out
+at capacity 8, assuming that the array will double in capacity each time a new item is added to an already full dynamic array?
+    ANSWER: 97 units of cost are spent in the entire process. 
+
+As N (ie. the number of pushes) grows large, under this strategy for resizing, what is the average big-oh complexity for a push?
+    ANSWER: The average big-oh complexity for a push is O(1)+ as N grows larger
+        
+
+2. How many cost units are spent in the entire process of performing 40 consecutive push operations on an empty array which starts out
+at capacity 8, assuming that the array will grow by a constant 2 spaces each time a new item is added to an already full dynamic
+array? 
+    ANSWER: 408 units of cost are spent in the entire process.
+
+As N (ie. the number of pushes) grows large, under this strategy for resizing, what is the average big-oh complexity for a push?
+    ANSWER: The average big-oh comolexity for a push is O(n/2) as N grows larger.
