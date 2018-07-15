@@ -10,6 +10,12 @@ struct DynArr
 	int capacity;	/* capacity ofthe array */
 };
 
+void printArray(DynArr* dyn) {
+    printf("Array: ");
+    for (int i = 0; i < dyn->size; i++)
+        printf("%s\t",dyn->data[i]);
+}
+
 
 /* ************************************************************************
 	Dynamic Array Functions
@@ -30,7 +36,7 @@ void initDynArr(DynArr *v, int capacity)
 	v->data = (TYPE *) malloc(sizeof(TYPE) * capacity);
 	assert(v->data != 0);
 	v->size = 0;
-	v->capacity = capacity;	
+	v->capacity = capacity;
 }
 
 /* Allocate and initialize dynamic array.
@@ -48,6 +54,7 @@ DynArr* newDynArr(int cap)
 	assert(r != 0);
 	initDynArr(r,cap);
 	return r;
+
 }
 
 /* Deallocate data array in dynamic array. 
@@ -144,8 +151,10 @@ void addDynArr(DynArr *v, TYPE val) {
     }
         
         //add the value
-    v->data[size] = val;
-    size++;
+    v->data[v->size] = val;
+    v->size++;
+    
+    printArray(v);    
 }
 
 /*	Get an element from the dynamic array from a specified position
@@ -164,6 +173,8 @@ TYPE getDynArr(DynArr *v, int pos) {
     assert(v != 0);
     assert(v->size != 0);
     assert(pos >= 0 && pos < v->size);
+    
+    printArray(v);    
 
         //return value
 	return v->data[pos]; 
@@ -189,6 +200,9 @@ void putDynArr(DynArr *v, int pos, TYPE val)
 
         //update value
     v->data[pos] = val;
+
+    printArray(v);    
+
 }
 
 /*	Swap two specified elements in the dynamic array
@@ -212,7 +226,10 @@ void swapDynArr(DynArr *v, int i, int  j)
     TYPE temp;
     temp = v->data[i];
     v->data[i] = v->data[j];
-    v-data[j] = temp;
+    v->data[j] = temp;
+
+printArray(v);    
+
 }
 
 /*	Remove the element at the specified location from the array,
@@ -237,6 +254,10 @@ void removeAtDynArr(DynArr *v, int idx)
     for (int i = (v->size - 1); i > idx; i--) {
         v->data[i-1] = v->data[i];
     }
+    v->size--;
+
+    printArray(v);    
+
 }
 
 
@@ -256,7 +277,7 @@ void removeAtDynArr(DynArr *v, int idx)
 int isEmptyDynArr(DynArr *v)
 {
     assert(v != 0);
-	return v->size;
+	return v->size==0;
 }
 
 /* 	Push an element onto the top of the stack
@@ -277,9 +298,12 @@ void pushDynArr(DynArr *v, TYPE val)
         _dynArrSetCapacity(v,(2*v->capacity));
     }
         //add the value
-    v->data[size] = val;
+    v->data[v->size] = val;
         //increase size
     v->size++;
+
+
+printArray(v);    
 }
 
 /*	Returns the element at the top of the stack 
@@ -294,7 +318,9 @@ TYPE topDynArr(DynArr *v)
     assert(v != 0);
     assert(v->size != 0);
 
-	return v->data[size-1];
+
+printArray(v);    
+	return v->data[v->size-1];
 }
 
 /* Removes the element on top of the stack 
@@ -310,7 +336,9 @@ void popDynArr(DynArr *v)
     assert(v != 0);
     assert(v->size != 0);
 
-    v->size--;
+    v->size = v->size - 1;
+
+printArray(v);    
 }
 
 /* ************************************************************************
@@ -361,8 +389,8 @@ void removeDynArr(DynArr *v, TYPE val)
         if (v->data[i] == val) {
             remove = i;
         }
-        if (remove >= i && i < (size - 1)) {
-           v->data[i] == v->data[i+1];
+        if (remove >= i && i < (v->size - 1)) {
+           v->data[i] = v->data[i+1];
         } 
     }
 }

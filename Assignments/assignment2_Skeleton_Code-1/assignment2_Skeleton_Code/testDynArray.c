@@ -62,11 +62,19 @@ int main(int argc, char* argv[]){
 	printf("\n\nTesting stack interface...\n");
 	printf("The stack's content: [3,6,5,7] <- top\n");
 	assertTrue(!isEmptyDynArr(dyn), "Testing isEmptyDynArr");
-	assertTrue(EQ(topDynArr(dyn), 7), "Test topDynArr == 7");
-	
+	assertTrue(EQ(topDynArr(dyn), 7), "Test topDynArr == 7\n");
+
+    printf("top: %d",topDynArr(dyn));
+    printf("size: %d",sizeDynArr(dyn)); 
+
 	popDynArr(dyn);
-	printf("Poping...\nThe stack's content: [3,6,5] <- top\n");
-	assertTrue(EQ(topDynArr(dyn), 5), "Test topDynArr == 5");
+	printf("\nPoping...\nThe stack's content: [3,6,5] <- top\n");
+    
+    printf("top: %d",topDynArr(dyn));
+    printf("size: %d",sizeDynArr(dyn)); 
+
+	
+    assertTrue(EQ(topDynArr(dyn), 5), "\nTest topDynArr == 5");
 	
 	pushDynArr(dyn, 9);
 	printf("Pushing 9...\nThe stack's content: [3,6,5,9] <- top\n");

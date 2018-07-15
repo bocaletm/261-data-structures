@@ -32,8 +32,12 @@ char nextChar(char* s)
 */
 int isBalanced(char* s)
 {
-	/* FIXME: You will write this function */		
-	return 0;
+    //char check;
+	    //get the next character
+    //check = nextChar(s);
+        //check the character
+    //if (check == '[' || check =
+    return 0;
 }
 
 int main(int argc, char* argv[]){
