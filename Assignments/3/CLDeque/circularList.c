@@ -111,6 +111,7 @@ void circularListDestroy(struct CircularList* list)
     }
     garbage = 0;
     next = 0;
+    free(list->sentinel);
         //free the list struct
     free(list);
 }

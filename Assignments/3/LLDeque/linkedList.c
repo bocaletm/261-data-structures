@@ -25,7 +25,18 @@ struct LinkedList
  * as appropriate.
  */
 static void init(struct LinkedList* list) {
-	// FIXME: you must write this
+        //create sentinel links
+    list->frontSentinel = malloc(sizeof(struct Link));
+    assert(list->frontSentinel != 0);
+    list->backSentinel = malloc(sizeof(struct Link));
+    assert(list->backSentinel != 0);
+        //connect the sentinels
+    list->frontSentinel->next = list->backSentinel;
+    list->frontSentinel->prev = 0;
+    list->backSentinel->prev = list->frontSentinel;
+    list->backSentinel->next = 0;
+
+    list->size = 0;
 }
 
 /**
@@ -34,7 +45,21 @@ static void init(struct LinkedList* list) {
  */
 static void addLinkBefore(struct LinkedList* list, struct Link* link, TYPE value)
 {
-	// FIXME: you must write this
+        //increment size
+    list->size++;
+        //create the link
+    struct Link* newLink = malloc(sizeof(struct Link));
+    newLink->value = value;
+
+        //connect the link's prev and next
+    newLink->next = link;
+    newLink->prev = link->prev;
+
+        //connect the link to the parameter's prev
+    link->prev->next = newLink;
+
+        //connect the link to the parameter
+    link->prev = newLink;
 }
 
 /**
@@ -43,7 +68,17 @@ static void addLinkBefore(struct LinkedList* list, struct Link* link, TYPE value
  */
 static void removeLink(struct LinkedList* list, struct Link* link)
 {
-	// FIXME: you must write this
+        //decrement size
+    list->size--;
+
+        //disconnect from prev
+    link->prev->next = link->next;
+
+        //disconnect from next
+    link->next->prev = link->prev;
+
+        //free memory
+    free(link);
 }
 
 /**
@@ -76,7 +111,7 @@ void linkedListDestroy(struct LinkedList* list)
  */
 void linkedListAddFront(struct LinkedList* list, TYPE value)
 {
-	// FIXME: you must write this
+    addLinkBefore(list,list->frontSentinel->next,value);
 }
 
 /**
@@ -84,7 +119,7 @@ void linkedListAddFront(struct LinkedList* list, TYPE value)
  */
 void linkedListAddBack(struct LinkedList* list, TYPE value)
 {
-	// FIXME: you must write this
+    addLinkBefore(list,list->backSentinel,value);
 }
 
 /**
@@ -92,7 +127,7 @@ void linkedListAddBack(struct LinkedList* list, TYPE value)
  */
 TYPE linkedListFront(struct LinkedList* list)
 {
-	// FIXME: you must write this
+    return list->frontSentinel->next->value;
 }
 
 /**
@@ -100,7 +135,7 @@ TYPE linkedListFront(struct LinkedList* list)
  */
 TYPE linkedListBack(struct LinkedList* list)
 {
-	// FIXME: you must write this
+    return list->backSentinel->prev->value;
 }
 
 /**
@@ -108,7 +143,7 @@ TYPE linkedListBack(struct LinkedList* list)
  */
 void linkedListRemoveFront(struct LinkedList* list)
 {
-	// FIXME: you must write this
+    removeLink(list,list->frontSentinel->next);
 }
 
 /**
@@ -116,7 +151,7 @@ void linkedListRemoveFront(struct LinkedList* list)
  */
 void linkedListRemoveBack(struct LinkedList* list)
 {
-	// FIXME: you must write this
+    removeLink(list,list->backSentinel->prev);
 }
 
 /**
@@ -124,7 +159,7 @@ void linkedListRemoveBack(struct LinkedList* list)
  */
 int linkedListIsEmpty(struct LinkedList* list)
 {
-	// FIXME: you must write this
+    return (list->frontSentinel->next == list->backSentinel);
 }
 
 /**
@@ -132,7 +167,12 @@ int linkedListIsEmpty(struct LinkedList* list)
  */
 void linkedListPrint(struct LinkedList* list)
 {
-	// FIXME: you must write this
+    struct Link* iterator = list->frontSentinel->next;
+    while (iterator != list->backSentinel) {
+        printf("%d ",iterator->value);
+        iterator = iterator->next;
+    }
+    printf("\n");
 }
 
 /**
@@ -140,7 +180,7 @@ void linkedListPrint(struct LinkedList* list)
  */
 void linkedListAdd(struct LinkedList* list, TYPE value)
 {
-	// FIXME: you must write this
+   linkedListAddBack(list,value); 
 }
 
 /**
@@ -148,7 +188,15 @@ void linkedListAdd(struct LinkedList* list, TYPE value)
  */
 int linkedListContains(struct LinkedList* list, TYPE value)
 {
-	// FIXME: you must write this
+    int found = 0;
+    struct Link* iterator = list->frontSentinel->next;
+    while (iterator != list->backSentinel) {
+        if (iterator->value == value) {
+            found = 1;
+        }
+        iterator = iterator->next;
+    }
+    return found;
 }
 
 /**
@@ -156,5 +204,13 @@ int linkedListContains(struct LinkedList* list, TYPE value)
  */
 void linkedListRemove(struct LinkedList* list, TYPE value)
 {
-	// FIXME: you must write this
+	struct Link* iterator = list->frontSentinel->next;
+    while (iterator != list->backSentinel) {
+        if (iterator->value == value) {
+           removeLink(list,iterator);
+                //break the loop
+           iterator = list->backSentinel->prev; 
+        }
+        iterator = iterator->next;
+    }
 }
