@@ -37,10 +37,7 @@ struct listQueue {
 * creates a sentinel and assigns the first link and last link
 * to the sentinel.
 */
-void listQueueInit(struct listQueue *q) {
-	    //create list
-    q = malloc(sizeof(struct listQueue));
-    assert(q != 0);
+void listQueueInit(struct listQueue* q) { 
         //create sentinel
     struct link* sentinel = malloc(sizeof(struct link));
     assert(sentinel != 0);
@@ -59,9 +56,10 @@ allocating
 the newly
  * created queue.
  */
-struct listQueue * listQueueCreate()
+struct listQueue* listQueueCreate()
 {
-    struct listQueue* q = 0;
+    struct listQueue* q = malloc(sizeof (struct listQueue));
+	assert(q != 0);
     listQueueInit(q);
     return q;
 }
@@ -73,7 +71,7 @@ struct listQueue * listQueueCreate()
 */
 int listQueueIsEmpty(struct listQueue *q) {
 	
-    if (q->firstLink == q->lastLink) {
+    if (q->firstLink->next == 0) {
         return 1;
     } else {
         return 0;
@@ -93,9 +91,15 @@ void listQueueAddBack(struct listQueue *q, TYPE e) {
         //create new link
     struct link* newLink = malloc(sizeof(struct link));
     assert(newLink != 0);
+		//add the value
+	newLink->value = e;
         //connect new link
-    newLink->next = q->firstLink->next;
-    q->firstLink->next = newLink;
+	q->lastLink->next = newLink;
+	q->lastLink = newLink;
+	if (q->size == 1) {
+		q->firstLink->next = newLink;
+	}
+	newLink->next = 0;
 }
 
 /*
@@ -106,6 +110,7 @@ void listQueueRemoveFront(struct listQueue *q) {
     struct link* garbage = q->firstLink->next;
     q->firstLink->next = q->firstLink->next->next; 
     free(garbage);
+	q->size--;
 }
 
 /*
@@ -148,7 +153,7 @@ struct linkedListStack {
 both 
  * queues and the structSize.
  */
-void linkedListStackInit(struct linkedListStack * s)
+void linkedListStackInit(struct linkedListStack* s)
 {
     s->Q1 = listQueueCreate();
     s->Q2 = listQueueCreate();    
@@ -161,7 +166,7 @@ calls the
 * initialization function to initialize all of the values. It then returns 
 the stack.
 */
-struct linkedListStack * linkedListStackCreate(){
+struct linkedListStack* linkedListStackCreate(){
         //create the stack
     struct linkedListStack* newStack = malloc(sizeof(struct linkedListStack));
     assert(newStack != 0);
@@ -191,20 +196,8 @@ The
 void linkedListStackPush(struct linkedListStack *s, TYPE d) {
         //increase size of the stack
     s->structSize++;
-        //add value to Q2
-    listQueueAddBack(s->Q2,d);
-        //add all other elements to Q2
-    while (!listQueueIsEmpty(s->Q1)) {
-            //add the front of Q1 to the back of Q2
-        listQueueAddBack(s->Q2,listQueueFront(s->Q1));
-            //remove the front of Q1
-        listQueueRemoveFront(s->Q1);
-    }
-        //swap the queues
-    struct listQueue* temp;
-    temp = s->Q1;
-    s->Q1 = s->Q2;
-    s->Q2 = temp;
+        //add value to Q1
+    listQueueAddBack(s->Q1,d);
 }
 /*
  * This funciton pops a value off of the stack. It does this by moving all 
@@ -214,16 +207,34 @@ maintained
  * at the back of the queue list. 
  */
 void linkedListStackPop(struct linkedListStack *s) {
-    listQueueRemoveFront(s->Q1);
-    s->structSize--;    
+	if (!linkedListStackIsEmpty(s)) {
+		//decrement size
+		s->structSize--;
+		//add all Q1 elements to Q2 except for the top
+		for (int i = 0; i < s->structSize; i++) {
+			//add the front of Q1 to the back of Q2
+			listQueueAddBack(s->Q2, listQueueFront(s->Q1));
+			//remove the front of Q1
+			listQueueRemoveFront(s->Q1);
+		}
+		//remove the remaining Q1 value
+		listQueueRemoveFront(s->Q1);
+
+		//swap the queues
+		struct listQueue* temp;
+		temp = s->Q1;
+		s->Q1 = s->Q2;
+		s->Q2 = temp;
+	}
 }
+
 /*
  * This function returns the value that is at the back of the queue that 
 is 
  * maintaing the values of the stack. 
  */
 TYPE linkedListStackTop(struct linkedListStack *s) {
-    return listQueueFront(s->Q1);
+	 return s->Q1->lastLink->value;
 }
 
 /*
@@ -244,7 +255,6 @@ void linkedListStackFree(struct linkedListStack *s){
 	free(s->Q2->firstLink);
 	free(s->Q1);
 	free(s->Q2);
-
 }
 
 /*
