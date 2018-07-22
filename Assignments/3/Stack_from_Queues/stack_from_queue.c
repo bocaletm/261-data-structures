@@ -219,12 +219,20 @@ void linkedListStackPop(struct linkedListStack *s) {
 		}
 		//remove the remaining Q1 value
 		listQueueRemoveFront(s->Q1);
+		//reset sentinel
+		s->Q1->lastLink = s->Q1->firstLink;
+		if (listQueueIsEmpty(s->Q2)) {
+			s->Q2->lastLink = s->Q2->firstLink;
+		}
 
 		//swap the queues
 		struct listQueue* temp;
 		temp = s->Q1;
 		s->Q1 = s->Q2;
 		s->Q2 = temp;
+	}
+	else {
+		printf("Error. Stack is empty.\n\n");
 	}
 }
 
@@ -255,6 +263,7 @@ void linkedListStackFree(struct linkedListStack *s){
 	free(s->Q2->firstLink);
 	free(s->Q1);
 	free(s->Q2);
+	free(s);
 }
 
 /*
@@ -319,7 +328,7 @@ int main(int argc, char* argv[])
 	printf("One more pop:\n");
 	linkedListStackPop(stack);
 	printf("Value at the top of stack: %d\n", 
-linkedListStackTop(stack));
+	linkedListStackTop(stack));
 
 	linkedListStackFree(stack);
 
