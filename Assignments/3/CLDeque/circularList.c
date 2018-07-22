@@ -162,7 +162,7 @@ void circularListRemoveFront(struct CircularList* list)
  */
 void circularListRemoveBack(struct CircularList* list)
 {
-    removeLink(list,list->sentinel->next);
+    removeLink(list,list->sentinel->prev);
 }
 
 /**
@@ -178,12 +178,12 @@ int circularListIsEmpty(struct CircularList* list)
  */
 void circularListPrint(struct CircularList* list)
 {
-    struct Link* iterator = list->sentinel;
-    while(iterator->next != list->sentinel){
-             //move to the next link
-        iterator = iterator->next;
-            //print the value
+    struct Link* iterator = list->sentinel->next;
+    while(iterator != list->sentinel){
+		     //print the value
         printf("%g ",iterator->value);
+			//move to the next link
+		iterator = iterator->next;
     }
     printf("\n");
 }
@@ -194,13 +194,18 @@ void circularListPrint(struct CircularList* list)
 void circularListReverse(struct CircularList* list)
 {
     struct Link* temp;
-	struct Link* iterator = list->sentinel;
-    while(iterator->next != list->sentinel){
-            //point to the next link
-        iterator = iterator->next;
-            //swap the pointers in the previous link
+	struct Link* iterator = list->sentinel->next;
+    while(iterator != list->sentinel){
+			//point to the next value
+		iterator = iterator->next;
+		    //swap the pointers in previous link
         temp = iterator->prev->prev;
         iterator->prev->prev = iterator->prev->next;
         iterator->prev->next = temp;
-    }
+   }
+		//swap the pointers in the sentinel
+	temp = list->sentinel->prev;
+	list->sentinel->prev = list->sentinel->next;
+	list->sentinel->next = temp;
+	temp = 0;
 }
