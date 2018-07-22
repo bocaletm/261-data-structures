@@ -38,9 +38,18 @@ struct listQueue {
 * to the sentinel.
 */
 void listQueueInit(struct listQueue *q) {
-	
-       // FIXME: you must write this
-
+	    //create list
+    q = malloc(sizeof(struct listQueue));
+    assert(q != 0);
+        //create sentinel
+    struct link* sentinel = malloc(sizeof(struct link));
+    assert(sentinel != 0);
+            //assign sentinel
+    sentinel->next = 0;
+    q->firstLink = sentinel;
+    q->lastLink = sentinel;
+        //set size
+    q->size = 0;
 }
 
 /*
@@ -52,8 +61,9 @@ the newly
  */
 struct listQueue * listQueueCreate()
 {
-     //FIXME: you must write this
-	
+    struct listQueue* q = 0;
+    listQueueInit(q);
+    return q;
 }
 
 
@@ -63,8 +73,11 @@ struct listQueue * listQueueCreate()
 */
 int listQueueIsEmpty(struct listQueue *q) {
 	
-          //FIXME: you must write this
-
+    if (q->firstLink == q->lastLink) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /*
@@ -75,10 +88,14 @@ links
  * to make the connection. No return value.
  */
 void listQueueAddBack(struct listQueue *q, TYPE e) {
-	
-
-       // FIXME: you must write this
-
+        //increase size
+    q->size++;
+        //create new link
+    struct link* newLink = malloc(sizeof(struct link));
+    assert(newLink != 0);
+        //connect new link
+    newLink->next = q->firstLink->next;
+    q->firstLink->next = newLink;
 }
 
 /*
@@ -86,20 +103,16 @@ void listQueueAddBack(struct listQueue *q, TYPE e) {
  */
 void listQueueRemoveFront(struct listQueue *q) {
 
-    
-    // FIXME: you must write this
-
-
-
+    struct link* garbage = q->firstLink->next;
+    q->firstLink->next = q->firstLink->next->next; 
+    free(garbage);
 }
 
 /*
  * Function returns the value at the front of the list.
  */
 TYPE listQueueFront(struct listQueue *q) {
-	
-       // FIXME: you must write this
-
+    return q->firstLink->next->value;
 }
 
 
@@ -137,9 +150,10 @@ both
  */
 void linkedListStackInit(struct linkedListStack * s)
 {
-	// FIXME: you must write this
-
- }
+    s->Q1 = listQueueCreate();
+    s->Q2 = listQueueCreate();    
+    s->structSize = 0;
+}
 
 /*
 * This function creates the linked list stack. It allocates the memory and 
@@ -148,11 +162,12 @@ calls the
 the stack.
 */
 struct linkedListStack * linkedListStackCreate(){
-
-    // FIXME: you must write this
-
-	
-
+        //create the stack
+    struct linkedListStack* newStack = malloc(sizeof(struct linkedListStack));
+    assert(newStack != 0);
+        //initialize the stack
+    linkedListStackInit(newStack);
+    return newStack;
 }
 
 /*
@@ -160,10 +175,11 @@ struct linkedListStack * linkedListStackCreate(){
 returns a 0.
 */
 int linkedListStackIsEmpty(struct linkedListStack *s) {
-
-	// FIXME: you must write this
-
-
+    if (s->structSize == 0) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /*
@@ -173,10 +189,22 @@ The
  * funciton then also increases the size of the stack by 1. 
  */
 void linkedListStackPush(struct linkedListStack *s, TYPE d) {
-	
-        // FIXME: you must write this
-
-
+        //increase size of the stack
+    s->structSize++;
+        //add value to Q2
+    listQueueAddBack(s->Q2,d);
+        //add all other elements to Q2
+    while (!listQueueIsEmpty(s->Q1)) {
+            //add the front of Q1 to the back of Q2
+        listQueueAddBack(s->Q2,listQueueFront(s->Q1));
+            //remove the front of Q1
+        listQueueRemoveFront(s->Q1);
+    }
+        //swap the queues
+    struct listQueue* temp;
+    temp = s->Q1;
+    s->Q1 = s->Q2;
+    s->Q2 = temp;
 }
 /*
  * This funciton pops a value off of the stack. It does this by moving all 
@@ -186,9 +214,8 @@ maintained
  * at the back of the queue list. 
  */
 void linkedListStackPop(struct linkedListStack *s) {
-	
-        // FIXME: you must write this
-
+    listQueueRemoveFront(s->Q1);
+    s->structSize--;    
 }
 /*
  * This function returns the value that is at the back of the queue that 
@@ -196,9 +223,7 @@ is
  * maintaing the values of the stack. 
  */
 TYPE linkedListStackTop(struct linkedListStack *s) {
-
-       // FIXME: you must write this
-
+    return listQueueFront(s->Q1);
 }
 
 /*
@@ -219,10 +244,6 @@ void linkedListStackFree(struct linkedListStack *s){
 	free(s->Q2->firstLink);
 	free(s->Q1);
 	free(s->Q2);
-
-	free(s);
-
-
 
 }
 
