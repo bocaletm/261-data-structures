@@ -180,7 +180,7 @@ void linkedListPrint(struct LinkedList* list)
  */
 void linkedListAdd(struct LinkedList* list, TYPE value)
 {
-   linkedListAddBack(list,value); 
+   linkedListAddFront(list,value); 
 }
 
 /**
