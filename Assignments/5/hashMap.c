@@ -1,8 +1,8 @@
 /*
  * CS 261 Data Structures
  * Assignment 5
- * Name: 
- * Date: 
+ * Name: Mario Bocaletti 
+ * Date: 8/8/18
  */
 
 #include "hashMap.h"
@@ -83,9 +83,26 @@ void hashMapInit(HashMap* map, int capacity)
  */
 void hashMapCleanUp(HashMap* map)
 {
-    // FIXME: implement
-}
+  assert(map != 0);
+  assert(map->table != 0);
+      //pointer to traverse the links
+  HashLink* linkptr = 0;
+  HashLink* garbage = 0;
 
+  for (int i = 0; i < map->size; i++) {
+    linkptr = map->table[i];
+      //delete all the links
+    while(linkptr != 0){
+      garbage = linkptr;
+      linkptr = linkptr->next; 
+      hashLinkDelete(garbage);
+    }
+  }
+  free(map->table);
+  map->size = 0;
+  garbage = 0;
+  linkptr = 0;
+}
 /**
  * Creates a hash table map, allocating memory for a link pointer table with
  * the given number of buckets.
@@ -108,6 +125,7 @@ void hashMapDelete(HashMap* map)
 {
     hashMapCleanUp(map);
     free(map);
+    map = 0;
 }
 
 /**
@@ -123,10 +141,21 @@ void hashMapDelete(HashMap* map)
  */
 int* hashMapGet(HashMap* map, const char* key)
 {
-    // FIXME: implement
-    return NULL;
+      //pointer to traverse the links
+  HashLink* linkptr = 0;
+      //get table index 
+  int index = HASH_FUNCTION(key) % map->capacity;
+      //set iterator pointer
+  linkptr = table[index];
+    //traverse buckets
+  while (linkptr != 0){
+    if (strcmp(linkptr->key,key) == 0) {
+      return linkptr->value;
+    }
+    linkptr = linkptr->next;
+  }
+  return 0;
 }
-
 /**
  * Resizes the hash table to have a number of buckets equal to the given 
  * capacity (double of the old capacity). After allocating the new table, 
@@ -140,7 +169,27 @@ int* hashMapGet(HashMap* map, const char* key)
  */
 void resizeTable(HashMap* map, int capacity)
 {
-    // FIXME: implement
+      //pointer to traverse the links
+    HashLink* linkptr = 0;
+      //check pointers
+    assert(map != 0);
+    assert(map->table != 0);
+      //create new table
+    HashMap* newMap = hashMapNew(capacity);  
+      //rehash values
+    for (int i = 0; i < map->capacity; i++) {
+      linkptr = map->table[i];
+      while(linkptr != 0) {
+        hashMapPut(newMap,linkptr->key,linkptr->value);
+        linkptr = linkptr->next;
+      }
+    }
+      //free old map
+    hashMapDelete(map);
+      //reset map pointer
+    map = newMap;
+      //clean ptr
+    newMap = 0;
 }
 
 /**
@@ -158,7 +207,14 @@ void resizeTable(HashMap* map, int capacity)
  */
 void hashMapPut(HashMap* map, const char* key, int value)
 {
-    // FIXME: implement
+    //check the pointers
+  assert(map != 0);
+  assert(map->table != 0);
+    //create iterator pointer
+  HashLink* linkptr = map->table[HASH_FUNCTION(key)];
+  while (linkptr != 0) {
+    
+  }
 }
 
 /**
