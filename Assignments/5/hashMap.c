@@ -89,7 +89,7 @@ void hashMapCleanUp(HashMap* map)
   HashLink* linkptr = 0;
   HashLink* garbage = 0;
 
-  for (int i = 0; i < map->size; i++) {
+  for (int i = (hashMapSize(map) - 1); i >= 0; i--) {
     linkptr = map->table[i];
       //delete all the links
     while(linkptr != 0){
@@ -144,13 +144,13 @@ int* hashMapGet(HashMap* map, const char* key)
       //pointer to traverse the links
   HashLink* linkptr = 0;
       //get table index 
-  int index = HASH_FUNCTION(key) % map->capacity;
+  int index = abs(HASH_FUNCTION(key) % hashMapCapacity(map));
       //set iterator pointer
   linkptr = table[index];
     //traverse buckets
   while (linkptr != 0){
     if (strcmp(linkptr->key,key) == 0) {
-      return linkptr->value;
+      return &linkptr->value;
     }
     linkptr = linkptr->next;
   }
@@ -169,15 +169,15 @@ int* hashMapGet(HashMap* map, const char* key)
  */
 void resizeTable(HashMap* map, int capacity)
 {
-      //pointer to traverse the links
-    HashLink* linkptr = 0;
       //check pointers
     assert(map != 0);
     assert(map->table != 0);
+      //pointer to traverse the links
+    HashLink* linkptr = 0;
       //create new table
     HashMap* newMap = hashMapNew(capacity);  
       //rehash values
-    for (int i = 0; i < map->capacity; i++) {
+    for (int i = hashMapCapacity(map) - 1; i >= 0; i--) {
       linkptr = map->table[i];
       while(linkptr != 0) {
         hashMapPut(newMap,linkptr->key,linkptr->value);
@@ -209,12 +209,37 @@ void hashMapPut(HashMap* map, const char* key, int value)
 {
     //check the pointers
   assert(map != 0);
+  assert(key != 0);
   assert(map->table != 0);
-    //create iterator pointer
-  HashLink* linkptr = map->table[HASH_FUNCTION(key)];
-  while (linkptr != 0) {
-    
+
+  float loadFactor = 0;
+  const int capacity = hashMapCapacity(map);
+
+    //get the index
+  int index = abs(HASH_FUNCTION(key) % capacity);
+    //pointer to iterate table
+  HashLink* linkptr = map->table[index];
+  int* updateValue; 
+    //search for the key
+  if (hashMapContains(map,key)) {
+    updateValue = hashMapGet(map,key);
+    *updateValue = value;
+  } else { 
+      //find last link
+    while(linkptr->next != 0) {
+      linkptr = linkptr->next;
+    }
+      //connect new link
+    lastptr->next = hashLinkNew(key,value,0);
+      //increase the size
+    map->size++;
   }
+    //rehash if needed
+  loadFactor = hashMapTableLoad(map);
+  if (loadFactor > MAX_TABLE_LOAD) {
+    resizeTable(map,2 * capacity);
+  }
+  return;
 }
 
 /**
@@ -226,7 +251,33 @@ void hashMapPut(HashMap* map, const char* key, int value)
  */
 void hashMapRemove(HashMap* map, const char* key)
 {
-    // FIXME: implement
+  int index;
+  HashLink* linkptr = 0;
+  HashLink* prev = 0;
+  if (hashMapContains(map,key)) {
+      //get the index
+    index = abs(HASH_FUNCTION(key) % hashMapCapacity(map));
+      //pointer to iterate table
+    linkptr = map->table[index];
+    while(linkptr != 0) {
+        //find the value
+      if (strcmp(linkptr->key,key) == 0) {
+          //connect tail to bucket head if 
+          //first value is removed
+        if(linkptr == map->table[index]) {
+          map->table[index] = linkptr->next;
+          //connect tail to link before deleted link otherwise
+        } else {
+          prev->next = linkptr->next;
+        }
+          hashLinkDelete(linkptr);
+          map->size--;
+      }
+      prev = linkptr;
+      linkptr = linkptr->next;
+    }
+  }
+  return;
 }
 
 /**
@@ -241,9 +292,22 @@ void hashMapRemove(HashMap* map, const char* key)
  */
 int hashMapContainsKey(HashMap* map, const char* key)
 {
-    // FIXME: implement
-    return 0;
+  assert(map != 0);
+  assert(key != 0);
+    //get the index
+  int index = abs(HASH_FUNCTION(key) % hashMapCapacity(map));
+    //pointer to iterate table
+  HashLink* linkptr = map->table[index]; 
+    //search for the key
+  while (linkptr != 0){
+    if (strcmp(linkptr->key,key) == 0) {
+      return 1;
+    }
+    linkptr = linkptr->next;
+  }
+  return 0;
 }
+
 
 /**
  * Returns the number of links in the table.
@@ -252,8 +316,8 @@ int hashMapContainsKey(HashMap* map, const char* key)
  */
 int hashMapSize(HashMap* map)
 {
-    // FIXME: implement
-    return 0;
+  assert(map != 0);
+  return map->size;
 }
 
 /**
@@ -263,8 +327,8 @@ int hashMapSize(HashMap* map)
  */
 int hashMapCapacity(HashMap* map)
 {
-    // FIXME: implement
-    return 0;
+  assert(map != 0);
+  return map->capacity;
 }
 
 /**
@@ -274,8 +338,13 @@ int hashMapCapacity(HashMap* map)
  */
 int hashMapEmptyBuckets(HashMap* map)
 {
-    // FIXME: implement
-    return 0;
+  int emptyBuckets = 0;
+  for (int i = (hashMapCapacity(map) - 1); i >= 0; i--) {
+    if (map->table[i] == 0) {
+      emptyBuckets++;
+    }
+  }
+  return emptyBuckets;
 }
 
 /**
@@ -288,8 +357,8 @@ int hashMapEmptyBuckets(HashMap* map)
  */
 float hashMapTableLoad(HashMap* map)
 {
-    // FIXME: implement
-    return 0;
+  assert(map != 0);
+  return (float)hashMapSize(map)/(float)hashMapCapacity(map);
 }
 
 /**
@@ -298,7 +367,12 @@ float hashMapTableLoad(HashMap* map)
  */
 void hashMapPrint(HashMap* map)
 {
-  // FIXME: implement
-
-   
+  assert(map != 0);
+  HashLink* linkptr = 0;
+  for (int i = 0; i < map->size; i++) {
+    linkptr = map->table[i];
+    printf("\n\tBucket %d: ",i+1);
+    while (linkptr != 0) {
+      printf("%d",linkptr->value);
+    }
 }
