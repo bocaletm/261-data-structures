@@ -89,7 +89,7 @@ void hashMapCleanUp(HashMap* map)
   HashLink* linkptr = 0;
   HashLink* garbage = 0;
 
-  for (int i = (hashMapSize(map) - 1); i >= 0; i--) {
+  for (int i = (hashMapCapacity(map) - 1); i >= 0; i--) {
     linkptr = map->table[i];
       //delete all the links
     while(linkptr != 0){
@@ -146,7 +146,7 @@ int* hashMapGet(HashMap* map, const char* key)
       //get table index 
   int index = abs(HASH_FUNCTION(key) % hashMapCapacity(map));
       //set iterator pointer
-  linkptr = table[index];
+  linkptr = map->table[index];
     //traverse buckets
   while (linkptr != 0){
     if (strcmp(linkptr->key,key) == 0) {
@@ -221,18 +221,23 @@ void hashMapPut(HashMap* map, const char* key, int value)
   HashLink* linkptr = map->table[index];
   int* updateValue; 
     //search for the key
-  if (hashMapContains(map,key)) {
+  if (hashMapContainsKey(map,key)) {
     updateValue = hashMapGet(map,key);
     *updateValue = value;
-  } else { 
-      //find last link
-    while(linkptr->next != 0) {
-      linkptr = linkptr->next;
+  } else {
+          //increase the size
+        map->size++;
+        //add first link
+    if (map->table[index] == 0) {
+        map->table[index] = hashLinkNew(key,value,0);
+    } else {
+          //find last link
+        while(linkptr->next != 0) {
+          linkptr = linkptr->next;
+        }
+          //connect new link to back
+        linkptr->next = hashLinkNew(key,value,0);
     }
-      //connect new link
-    lastptr->next = hashLinkNew(key,value,0);
-      //increase the size
-    map->size++;
   }
     //rehash if needed
   loadFactor = hashMapTableLoad(map);
@@ -254,7 +259,7 @@ void hashMapRemove(HashMap* map, const char* key)
   int index;
   HashLink* linkptr = 0;
   HashLink* prev = 0;
-  if (hashMapContains(map,key)) {
+  if (hashMapContainsKey(map,key)) {
       //get the index
     index = abs(HASH_FUNCTION(key) % hashMapCapacity(map));
       //pointer to iterate table
@@ -369,10 +374,12 @@ void hashMapPrint(HashMap* map)
 {
   assert(map != 0);
   HashLink* linkptr = 0;
-  for (int i = 0; i < map->size; i++) {
+  for (int i = 0; i < hashMapCapacity(map); i++) {
     linkptr = map->table[i];
-    printf("\n\tBucket %d: ",i+1);
+    printf("\n\tBucket %d: ",i);
     while (linkptr != 0) {
       printf("%d",linkptr->value);
+      linkptr = linkptr->next;
     }
+  }
 }
