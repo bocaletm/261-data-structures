@@ -7,6 +7,18 @@
 #include <ctype.h>
 
 /**
+ * Convert word to lower case
+ * input: an ascii null-terminated word
+**/
+void lowerCase(char* word) {
+    int idx = 0;
+    while(word[idx] != '\0') {
+        word[idx] = tolower(word[idx]); 
+        idx++;
+    }
+}
+
+/**
  * Allocates a string for the next word in the file and returns it. This string
  * is null terminated. Returns NULL after reaching the end of the file.
  * @param file
@@ -59,20 +71,52 @@ char* nextWord(FILE* file)
  */
 int main(int argc, const char** argv)
 {
-    // FIXME: implement
     const char* fileName = "input1.txt";
     if (argc > 1)
     {
         fileName = argv[1];
     }
     printf("Opening file: %s\n", fileName);
-    
+         
     clock_t timer = clock();
     
     HashMap* map = hashMapNew(10);
     
     // --- Concordance code begins here ---
-    // Be sure to free the word after you are done with it here.
+    char* word;
+        //open file to read
+    FILE* file = fopen(fileName,"r"); 
+          //read a word
+    word = nextWord(file);
+    while(word) {
+            //make case insensitive
+        lowerCase(word);
+                //increase the number of instances
+        if (hashMapContainsKey(map,word)) {
+            (*hashMapGet(map,word))++;
+        } else {
+                //add the word to the map
+            hashMapPut(map,word,1);
+        }
+            //delete word
+        free(word);
+            //get next word
+        word = nextWord(file);
+    }
+    fclose(file);
+        //print the concordance
+    printf("\nConcordance:");
+    printf("\n----------------------------------");
+    HashLink* linkptr = 0;
+    for (int i = 0; i < hashMapCapacity(map); i++) {
+        linkptr = map->table[i];
+        printf("\n\tBucket %d: ",i);
+        while (linkptr != 0) {
+          printf("-> (%s, %d) ",linkptr->key,linkptr->value);
+          linkptr = linkptr->next;
+        }
+    }
+    printf("\n----------------------------------\n");
     // --- Concordance code ends here ---
     
     hashMapPrint(map);
