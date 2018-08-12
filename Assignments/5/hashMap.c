@@ -11,7 +11,7 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-#pragma warning(disable:4996)
+//#pragma warning(disable:4996)
 
 int hashFunction1(const char* key)
 {
@@ -220,8 +220,6 @@ void hashMapPut(HashMap* map, const char* key, int value)
 
     //get the index
   int index = abs(HASH_FUNCTION(key) % capacity);
-    //pointer to iterate table
-  HashLink* linkptr = map->table[index];
   int* updateValue; 
     //search for the key
   if (hashMapContainsKey(map,key)) {
