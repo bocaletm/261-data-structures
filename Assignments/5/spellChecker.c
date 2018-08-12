@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#pragma warning(disable:4996)
+//#pragma warning(disable:4996)
 
 #define QCAP 5
 
@@ -15,6 +15,7 @@ struct Queue {
   HashLink* last;
   int size;
   int cap;
+  int max;
 };
 
 /**initialize queue
@@ -27,6 +28,18 @@ void initQ(struct Queue* q, int cap) {
     q->last = 0;
 }
 
+/** newQLink
+ */
+HashLink* newQLink(char* word, int value) {
+  HashLink* temp = 0; 
+     //create new link
+  temp = malloc(sizeof(HashLink));
+  temp->key = word;
+  temp->value = value;
+  temp->next = 0;
+
+  return temp;
+}
 /**
  * Add to queue
  * Uses hashlinks to implement a queue
@@ -34,22 +47,25 @@ void initQ(struct Queue* q, int cap) {
  * queue behavior (dropping front)
  * Input: pointer to queue and hash link key 
 */
-void addQueue(struct Queue* Q, char* word) {
+void addQueue(struct Queue* Q, char* word, int value) {
+   
   HashLink* temp = 0;
-    //create new link
-  temp = malloc(sizeof(HashLink));
-  temp->key = word;
-  temp->next = 0;
-  
+
   if (Q->size == 0) {
+      //link is front and back and value is max
+    temp = newQLink(word,value);
     Q->first = Q->last = temp;
+    Q->max = value;
     Q->size++;
-  } else if (Q->size < Q->cap) {
+  } else if (Q->size < Q->cap && value < Q->max) {
+    temp = newQLink(word,value);
        //add to back
     Q->last->next = temp;
     Q->last = temp;
     Q->size++;
-  } else {
+  } else if (value < Q->max) {
+    temp = newQLink(word,value);
+        //add to back
     Q->last->next = temp;
     Q->last = temp;
     Q->size++;
@@ -57,6 +73,8 @@ void addQueue(struct Queue* Q, char* word) {
     temp = Q->first;
     Q->first = Q->first->next;
     free(temp);
+        //reset max
+    Q->max = Q->first->value;
   }
   temp = 0;
     return;
@@ -124,30 +142,30 @@ int levenshtein(char* w1, char* w2) {
     return len1;
   }
     //create a matrix 
-  int** matrix = (int**)malloc(len1 * sizeof(*matrix));
+  int** matrix = malloc(len1 * sizeof(int*));
   assert(matrix != 0);
-  for (int i = 0; i <= len1; i++) {
-	  matrix[i] = malloc(len2 * sizeof(*(matrix[i])));
+  for (int i = 0; i < len1; i++) {
+	  matrix[i] = malloc(len2 * sizeof(int));
 	  assert(matrix[i] != 0);
   }
 	//initialize to 0
-  for (int i = 0; i <= len1; i++) {
-    for (int j = 0; j <= len2; j++) {
+  for (int i = 0; i < len1; i++) {
+    for (int j = 0; j < len2; j++) {
       matrix[i][j] = 0;
     }
   }
     //initialize first column and row to 0...n 
-  for (int i = 1; i <= len1; i++) {
+  for (int i = 1; i < len1; i++) {
     matrix[i][0] = i; 
   }
   
-  for (int j = 1; j <= len2; j++) {
+  for (int j = 1; j < len2; j++) {
     matrix[0][j] = j;
   }
     //compare each character in the strings
-  for (int i = 1; i <= len1; i++) {
+  for (int i = 1; i < len1; i++) {
     char1 = w1[i-1];
-    for (int j = 1; j <= len2; j++) {
+    for (int j = 1; j < len2; j++) {
       char2 = w2[j-1];
       if (char1 == char2) {
         cost = 0;
@@ -157,9 +175,9 @@ int levenshtein(char* w1, char* w2) {
       matrix[i][j] = minimum((matrix[i-1][j] + 1), (matrix[i][j-1] + 1), (matrix[i-1][j-1] + cost));
     }
   }
-   value = matrix[len1][len2];
+   value = matrix[len1-1][len2-1];
 	//free the memory
-  for (int i = 0; i <= len1; i++) {
+  for (int i = 0; i < len1; i++) {
 	  free(matrix[i]);
   }
   free(matrix);
@@ -217,12 +235,9 @@ char* nextWord(FILE* file)
 void loadDictionary(FILE* file, HashMap* map)
 {
 	assert(map != 0);
-	int count = 0;
           //read a word
     char* word = nextWord(file);
     while(word) {
-		count++;
-		printf("%d\n", count);
             //add the word to the map
         hashMapPut(map,word,1);
            //delete word
@@ -241,12 +256,10 @@ void loadDictionary(FILE* file, HashMap* map)
  * @return
  */
 int main(int argc, const char** argv) {
-    HashMap* map = hashMapNew(1);
+    HashMap* map = hashMapNew(1000);
     char* word;
     struct Queue* levenshteinQ = malloc(sizeof(struct Queue));
     initQ(levenshteinQ,QCAP);
-    int maxVal = 0;
-    char garbage;
     int size;
     HashLink* linkptr = 0;
     int valid = 1;
@@ -276,7 +289,7 @@ int main(int argc, const char** argv) {
         while(inputBuffer[size] != '\0'){
            size++;
         }
-        word = malloc(sizeof(char) * (size));
+        word = malloc(sizeof(char) * (size + 1));
         for (int i = 0; i < size; i++) { 
           word[i] = inputBuffer[i];
             //clear the buffer
@@ -302,23 +315,12 @@ int main(int argc, const char** argv) {
                 linkptr = map->table[i];
                 while (linkptr != 0) {
                   linkptr->value = levenshtein(linkptr->key,word);
+                    //add words with lowest levenshtein to queue
+                  addQueue(levenshteinQ,linkptr->key,linkptr->value);
+                  linkptr = linkptr->next;
                 }
               }
              
-                //add words with lowest levenshtein to queue
-            maxVal = 1000000;
-            for (int i = 0; i < hashMapCapacity(map); i++) {
-                linkptr = map->table[i];
-                while (linkptr != 0) {
-                  if (linkptr->value < maxVal || levenshteinQ->size < levenshteinQ->cap) {
-                    addQueue(levenshteinQ,linkptr->key);
-                    if (linkptr->value < maxVal) {
-                      maxVal = linkptr->value; 
-                    }
-                  }
-                }
-            }
-
             printf("Did you mean: ");
             printQ(levenshteinQ);
             destroyQ(levenshteinQ);
