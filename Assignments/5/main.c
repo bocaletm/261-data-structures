@@ -5,18 +5,7 @@
 #include <time.h>
 #include <assert.h>
 #include <ctype.h>
-
-/**
- * Convert word to lower case
- * input: an ascii null-terminated word
-**/
-void lowerCase(char* word) {
-    int idx = 0;
-    while(word[idx] != '\0') {
-        word[idx] = tolower(word[idx]); 
-        idx++;
-    }
-}
+#pragma warning(disable:4996)
 
 /**
  * Allocates a string for the next word in the file and returns it. This string
@@ -29,7 +18,6 @@ char* nextWord(FILE* file)
     int maxLength = 16;
     int length = 0;
     char* word = malloc(sizeof(char) * maxLength);
-//Fix me: Do the necessary change to make the implementation //case-insensitive  
    while (1) 
     {
         char c = fgetc(file);
@@ -43,8 +31,8 @@ char* nextWord(FILE* file)
                 maxLength *= 2;
                 word = realloc(word, maxLength);
             }
-            // .............
-            word[length] = c;
+            // make lower case
+            word[length] = tolower(c);
             length++;
         }
         else if (length > 0 || c == EOF)
@@ -58,7 +46,7 @@ char* nextWord(FILE* file)
         return NULL;
     }
     word[length] = '\0';
-    return word;
+	return word;
 }
 
 /**
@@ -89,8 +77,6 @@ int main(int argc, const char** argv)
           //read a word
     word = nextWord(file);
     while(word) {
-            //make case insensitive
-        lowerCase(word);
                 //increase the number of instances
         if (hashMapContainsKey(map,word)) {
             (*hashMapGet(map,word))++;
