@@ -74,21 +74,65 @@ void printQ(struct Queue* q) {
 }
 
 /** Calculate levenshtein number for map
- * input: map and word
+ * input: two words
+ * inspired by: https://people.cs.pitt.edu/~kirk/cs1501/Pruhs/Spring2006/assignments/editdistance/Levenshtein%20Distance.htm 
  * */
-void levenshtein(char* word) {
-  for (int i = 0; i < hashMapCapacity(map); i++) {
-    linkptr = map->table[i];
-    while (linkptr != 0) {
-     if (linkptr->value < maxVal || levenshteinQ->size < levenshteinQ->cap){
-         addQueue(levenshteinQ,linkptr->key);
-         if (linkptr->value < maxVal) {
-           maxVal = linkptr->value; 
-         }
-     }
+int levenshtein(char* w1, char* w2) {
+  int cost = 0;
+    //get the string lengths
+  int len1 = strlength(w1);
+  int len2 = strlength(w2);
+    //temp chars
+  char char1;
+  char char2;
+    //base case: if either is empty, return the other
+  if (len1 == 0) {
+    return len2;
+  } else if (len2 == 0){
+    return len1;
+  }
+    //create a matrix initialized to 0
+  int matrix[len1 + 1][len2 + 1];
+  for (int i = 0; i <= len1; i++) {
+    for (int j = 0; j <= len2; j++) {
+      matrix[i][j] = 0;
     }
   }
+    //initialize first column and row to 0...n 
+  for (int i = 1; i <= len1; i++) {
+    matrix[i][0] = 1; 
+  }
+  
+  for (int j = 1; j <= len2; j++) {
+    matrix[0][j] = j;
+  }
+    //compare each character in the strings
+  for (int i = 1; i <= len1; i++) {
+    char1 = w1[i-1];
+    for (int j = 1; j <= len2; j++) {
+      char2 = w2[j-1];
+      if (char1 == char2) {
+        cost = 0;
+      } else {
+        cost = 1;
+      }
+      matrix[i][j] = minimum(matrix[i-1][j] + 1, matrix[i][j-1]+1.matrix[i-1][j-1] + cost);
+    }
+  }
+  return matrix[len1][len2];
 }
+
+
+
+  
+  for (int j = 1; j < len2; j++) {
+    for (int i = 1; i < len1; i++) {
+      if (w1[i] = w2[j]) {
+        //cost = 9
+      else {
+        //cost = 1
+      }
+      matrix[i,j] =   
 
 /**
  * Convert word to lower case
@@ -227,8 +271,13 @@ int main(int argc, const char** argv)
           } else {
             printf("The inputted word... is spelled incorrectly\n");
 
-              //traverse map calculating levenshtein
-            levenshtein(map,word);
+                //traverse map calculating levenshtein
+              for (int i = 0; i < hashMapCapacity(map); i++) {
+                linkptr = map->table[i];
+                while (linkptr != 0) {
+                  linkptr->value = levenshtein(linkptr->key,word);
+                }
+              }
              
                 //add words with lowest levenshtein to queue
             maxVal = 1000000;
