@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#pragma warning(disable:4996)
+//#pragma warning(disable:4996)
 
 #define QCAP 5
 
