@@ -260,7 +260,11 @@ int main(int argc, const char** argv) {
         while((garbage = getchar()) != '\n' && garbage != EOF);
 
         scanf("%s", inputBuffer);
- // Implement the spell checker code here..
+
+/***************************************
+ * Implement the spell checker code here..
+ * ************************************/
+
           //get clean word
         size = 0;
         while(inputBuffer[size] != '\n'){
