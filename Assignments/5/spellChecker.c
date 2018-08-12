@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#pragma warning(disable:4996)
 
 #define QCAP 5
 
@@ -109,6 +110,7 @@ int minimum(int a, int b, int c) {
  * */
 int levenshtein(char* w1, char* w2) {
   int cost = 0;
+  int value = 0;
     //get the string lengths
   int len1 = strlen(w1);
   int len2 = strlen(w2);
@@ -121,8 +123,14 @@ int levenshtein(char* w1, char* w2) {
   } else if (len2 == 0){
     return len1;
   }
-    //create a matrix initialized to 0
-  int matrix[len1 + 1][len2 + 1];
+    //create a matrix 
+  int** matrix = (int**)malloc(len1 * sizeof(*matrix));
+  assert(matrix != 0);
+  for (int i = 0; i <= len1; i++) {
+	  matrix[i] = malloc(len2 * sizeof(*(matrix[i])));
+	  assert(matrix[i] != 0);
+  }
+	//initialize to 0
   for (int i = 0; i <= len1; i++) {
     for (int j = 0; j <= len2; j++) {
       matrix[i][j] = 0;
@@ -149,20 +157,16 @@ int levenshtein(char* w1, char* w2) {
       matrix[i][j] = minimum((matrix[i-1][j] + 1), (matrix[i][j-1] + 1), (matrix[i-1][j-1] + cost));
     }
   }
-  return matrix[len1][len2];
+   value = matrix[len1][len2];
+	//free the memory
+  for (int i = 0; i <= len1; i++) {
+	  free(matrix[i]);
+  }
+  free(matrix);
+
+  return value;
 }
 
-/**
- * Convert word to lower case
- * input: an ascii null-terminated word
-**/
-void lowerCase(char* word) {
-    int idx = 0;
-    while(word[idx] != '\0') {
-        word[idx] = tolower(word[idx]); 
-        idx++;
-    }
-}
 
 /**
  * Allocates a string for the next word in the file and returns it. This string
@@ -188,7 +192,7 @@ char* nextWord(FILE* file)
                 maxLength *= 2;
                 word = realloc(word, maxLength);
             }
-            word[length] = c;
+            word[length] = tolower(c);
             length++;
         }
         else if (length > 0 || c == EOF)
@@ -212,11 +216,13 @@ char* nextWord(FILE* file)
  */
 void loadDictionary(FILE* file, HashMap* map)
 {
+	assert(map != 0);
+	int count = 0;
           //read a word
     char* word = nextWord(file);
     while(word) {
-            //make case insensitive
-        lowerCase(word);
+		count++;
+		printf("%d\n", count);
             //add the word to the map
         hashMapPut(map,word,1);
            //delete word
@@ -235,7 +241,7 @@ void loadDictionary(FILE* file, HashMap* map)
  * @return
  */
 int main(int argc, const char** argv) {
-    HashMap* map = hashMapNew(1000);
+    HashMap* map = hashMapNew(1);
     char* word;
     struct Queue* levenshteinQ = malloc(sizeof(struct Queue));
     initQ(levenshteinQ,QCAP);
@@ -245,7 +251,9 @@ int main(int argc, const char** argv) {
     HashLink* linkptr = 0;
     int valid = 1;
 
-    FILE* file = fopen("dictionary.txt", "r");
+	FILE* file = 0;
+	file = fopen("dictionary.txt", "r");
+	assert(file != 0);
     clock_t timer = clock();
     loadDictionary(file, map);
     timer = clock() - timer;
@@ -256,8 +264,6 @@ int main(int argc, const char** argv) {
     int quit = 0;
     while (!quit) {
         printf("Enter a word or \"quit\" to quit: ");
-          //discard what's in the input buffer
-        while((garbage = getchar()) != '\n' && garbage != EOF);
 
         scanf("%s", inputBuffer);
 
@@ -267,10 +273,9 @@ int main(int argc, const char** argv) {
 
           //get clean word
         size = 0;
-        while(inputBuffer[size] != '\n'){
+        while(inputBuffer[size] != '\0'){
            size++;
         }
-        size++;
         word = malloc(sizeof(char) * (size));
         for (int i = 0; i < size; i++) { 
           word[i] = inputBuffer[i];
@@ -281,6 +286,8 @@ int main(int argc, const char** argv) {
             valid = 0;
           }
         }
+		inputBuffer[size] = 0;
+		word[size] = '\0';
         if (!valid) {
           printf("Invalid input. Only letters please.\n");
         } else {

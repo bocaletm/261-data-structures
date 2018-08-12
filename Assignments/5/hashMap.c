@@ -11,6 +11,7 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
+#pragma warning(disable:4996)
 
 int hashFunction1(const char* key)
 {
@@ -184,12 +185,14 @@ void resizeTable(HashMap* map, int capacity)
         linkptr = linkptr->next;
       }
     }
-      //free old map
-    hashMapDelete(map);
-      //reset map pointer
-    map = newMap;
-      //clean ptr
-    newMap = 0;
+      //clear old map links
+    hashMapCleanUp(map);
+		//populate old map with new links
+	map->table = newMap->table;
+	map->size = newMap->size;
+	map->capacity = newMap->capacity;
+		//delete the old map
+	free(newMap);
 }
 
 /**
@@ -241,8 +244,8 @@ void hashMapPut(HashMap* map, const char* key, int value)
   }
     //rehash if needed
   loadFactor = hashMapTableLoad(map);
-  if (loadFactor > MAX_TABLE_LOAD) {
-    resizeTable(map,2 * capacity);
+  if (loadFactor >= MAX_TABLE_LOAD) {
+	resizeTable(map,2 * capacity);
   }
   return;
 }
