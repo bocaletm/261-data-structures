@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-//#pragma warning(disable:4996)
+#pragma warning(disable:4996)
 
 #define QCAP 5
 
@@ -57,7 +57,7 @@ void addQueue(struct Queue* Q, char* word, int value) {
     Q->first = Q->last = temp;
     Q->max = value;
     Q->size++;
-  } else if (Q->size < Q->cap && value < Q->max) {
+  } else if (Q->size <= Q->cap && value < Q->max) {
     temp = newQLink(word,value);
        //add to back
     Q->last->next = temp;
@@ -68,8 +68,7 @@ void addQueue(struct Queue* Q, char* word, int value) {
         //add to back
     Q->last->next = temp;
     Q->last = temp;
-    Q->size++;
-      //delete the front
+        //delete the front
     temp = Q->first;
     Q->first = Q->first->next;
     free(temp);
@@ -258,8 +257,8 @@ void loadDictionary(FILE* file, HashMap* map)
 int main(int argc, const char** argv) {
     HashMap* map = hashMapNew(1000);
     char* word;
-    struct Queue* levenshteinQ = malloc(sizeof(struct Queue));
-    initQ(levenshteinQ,QCAP);
+    struct Queue* levenshteinQ;
+
     int size;
     HashLink* linkptr = 0;
     int valid = 1;
@@ -276,7 +275,7 @@ int main(int argc, const char** argv) {
     char inputBuffer[256];
     int quit = 0;
     while (!quit) {
-        printf("Enter a word or \"quit\" to quit: ");
+        printf("\nEnter a word or \"quit\" to quit: ");
 
         scanf("%s", inputBuffer);
 
@@ -308,21 +307,23 @@ int main(int argc, const char** argv) {
           if (hashMapContainsKey(map,word)) {
             printf("The inputted word... is spelled correctly\n");
           } else {
-            printf("The inputted word... is spelled incorrectly\n");
-
+			printf("The inputted word... is spelled incorrectly\n");
+			levenshteinQ = malloc(sizeof(struct Queue));
+			initQ(levenshteinQ, QCAP);
                 //traverse map calculating levenshtein
-              for (int i = 0; i < hashMapCapacity(map); i++) {
+            for (int i = 0; i < hashMapCapacity(map); i++) {
                 linkptr = map->table[i];
                 while (linkptr != 0) {
                   linkptr->value = levenshtein(linkptr->key,word);
-                    //add words with lowest levenshtein to queue
+                    //add words to levenshtein queue
                   addQueue(levenshteinQ,linkptr->key,linkptr->value);
                   linkptr = linkptr->next;
                 }
-              }
+            }
              
             printf("Did you mean: ");
             printQ(levenshteinQ);
+			printf("?");
             destroyQ(levenshteinQ);
           } 
           if (strcmp(word, "quit") == 0) {
@@ -330,7 +331,7 @@ int main(int argc, const char** argv) {
           }
       }
         free(word);
-        hashMapDelete(map);
     }
+	hashMapDelete(map);
     return 0;
 }

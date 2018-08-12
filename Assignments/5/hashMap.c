@@ -11,7 +11,7 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-//#pragma warning(disable:4996)
+#pragma warning(disable:4996)
 
 int hashFunction1(const char* key)
 {
@@ -228,21 +228,12 @@ void hashMapPut(HashMap* map, const char* key, int value)
     updateValue = hashMapGet(map,key);
     *updateValue = value;
   } else {
-          //increase the size
+			//increase the size
         map->size++;
-        //add first link
-    if (map->table[index] == 0) {
-        map->table[index] = hashLinkNew(key,value,0);
-    } else {
-          //find last link
-        while(linkptr->next != 0) {
-          linkptr = linkptr->next;
-        }
-          //connect new link to back
-        linkptr->next = hashLinkNew(key,value,0);
-    }
+			//add first link
+        map->table[index] = hashLinkNew(key,value,map->table[index]);
   }
-    //rehash if needed
+		//rehash if needed
   loadFactor = hashMapTableLoad(map);
   if (loadFactor >= MAX_TABLE_LOAD) {
 	resizeTable(map,2 * capacity);
@@ -257,12 +248,10 @@ void hashMapPut(HashMap* map, const char* key, int value)
  * @param map
  * @param key
  */
-void hashMapRemove(HashMap* map, const char* key)
-{
+void hashMapRemove(HashMap* map, const char* key) {
   int index;
   HashLink* linkptr = 0;
   HashLink* prev = 0;
-  if (hashMapContainsKey(map,key)) {
       //get the index
     index = abs(HASH_FUNCTION(key) % hashMapCapacity(map));
       //pointer to iterate table
@@ -284,7 +273,6 @@ void hashMapRemove(HashMap* map, const char* key)
       prev = linkptr;
       linkptr = linkptr->next;
     }
-  }
   return;
 }
 
