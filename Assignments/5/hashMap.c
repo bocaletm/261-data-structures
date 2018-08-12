@@ -11,7 +11,7 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-#pragma warning(disable:4996)
+//#pragma warning(disable:4996)
 
 int hashFunction1(const char* key)
 {
