@@ -4,15 +4,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <queue.h>
 #include <ctype.h>
+
+#define QCAP 5
 
   //queue struct to find lowest levenshtein numbers
 struct Queue {
   HashLink* first;
   HashLink* last;
-  int size = 0;
-  int cap = 5;
+  int size;
+  int cap;
+};
+
+/**initialize queue
+ *input: capacity
+ */
+void initQ(struct Queue* q, int cap) {
+    q->cap = cap;
+    q->size = 0;
+    q->first = 0;
+    q->last = 0;
 }
 
 /**
@@ -23,24 +34,30 @@ struct Queue {
  * Input: pointer to queue and hash link key 
 */
 void addQueue(struct Queue* Q, char* word) {
-  HashLink* newLink = 0;
+  HashLink* temp = 0;
     //create new link
-  newLink = malloc(sizeof(HashLink));
-  newLink->key = word;
-  newLink->next = 0;
+  temp = malloc(sizeof(HashLink));
+  temp->key = word;
+  temp->next = 0;
   
   if (Q->size == 0) {
-    Q->first = Q->last = newLink;
+    Q->first = Q->last = temp;
     Q->size++;
   } else if (Q->size < Q->cap) {
        //add to back
-    last->next = newLink;
+    Q->last->next = temp;
+    Q->last = temp;
     Q->size++;
   } else {
-    last->next = newLink;
-    newLink = first->next;
+    Q->last->next = temp;
+    Q->last = temp;
+    Q->size++;
       //delete the front
-    free(first);
+    temp = Q->first;
+    Q->first = Q->first->next;
+    free(temp);
+  }
+  temp = 0;
     return;
 }
 
@@ -50,7 +67,7 @@ void addQueue(struct Queue* Q, char* word) {
 */
 void destroyQ(struct Queue* q) {
   assert(q != 0);
-  assert(q->first != 0;
+  assert(q->first != 0);
 
   HashLink* itr = q->first;
   HashLink* garbage = 0;
@@ -73,6 +90,19 @@ void printQ(struct Queue* q) {
     }
 }
 
+/** Returns the minimum of 3 ints
+ */
+int minimum(int a, int b, int c) {
+    int min = a;
+    if (b < min) {
+        min = b;
+    } else if (c < min) {
+        min = c;
+    }
+    return min;
+}
+        
+
 /** Calculate levenshtein number for map
  * input: two words
  * inspired by: https://people.cs.pitt.edu/~kirk/cs1501/Pruhs/Spring2006/assignments/editdistance/Levenshtein%20Distance.htm 
@@ -80,8 +110,8 @@ void printQ(struct Queue* q) {
 int levenshtein(char* w1, char* w2) {
   int cost = 0;
     //get the string lengths
-  int len1 = strlength(w1);
-  int len2 = strlength(w2);
+  int len1 = strlen(w1);
+  int len2 = strlen(w2);
     //temp chars
   char char1;
   char char2;
@@ -100,7 +130,7 @@ int levenshtein(char* w1, char* w2) {
   }
     //initialize first column and row to 0...n 
   for (int i = 1; i <= len1; i++) {
-    matrix[i][0] = 1; 
+    matrix[i][0] = i; 
   }
   
   for (int j = 1; j <= len2; j++) {
@@ -116,23 +146,11 @@ int levenshtein(char* w1, char* w2) {
       } else {
         cost = 1;
       }
-      matrix[i][j] = minimum(matrix[i-1][j] + 1, matrix[i][j-1]+1.matrix[i-1][j-1] + cost);
+      matrix[i][j] = minimum((matrix[i-1][j] + 1), (matrix[i][j-1] + 1), (matrix[i-1][j-1] + cost));
     }
   }
   return matrix[len1][len2];
 }
-
-
-
-  
-  for (int j = 1; j < len2; j++) {
-    for (int i = 1; i < len1; i++) {
-      if (w1[i] = w2[j]) {
-        //cost = 9
-      else {
-        //cost = 1
-      }
-      matrix[i,j] =   
 
 /**
  * Convert word to lower case
@@ -195,7 +213,7 @@ char* nextWord(FILE* file)
 void loadDictionary(FILE* file, HashMap* map)
 {
           //read a word
-    word = nextWord(file);
+    char* word = nextWord(file);
     while(word) {
             //make case insensitive
         lowerCase(word);
@@ -216,11 +234,11 @@ void loadDictionary(FILE* file, HashMap* map)
  * @param argv
  * @return
  */
-int main(int argc, const char** argv)
-{
+int main(int argc, const char** argv) {
     HashMap* map = hashMapNew(1000);
     char* word;
     struct Queue* levenshteinQ = malloc(sizeof(struct Queue));
+    initQ(levenshteinQ,QCAP);
     int maxVal = 0;
     char garbage;
     int size;
@@ -236,24 +254,25 @@ int main(int argc, const char** argv)
     
     char inputBuffer[256];
     int quit = 0;
-    while (!quit)
-    {
+    while (!quit) {
         printf("Enter a word or \"quit\" to quit: ");
-
           //discard what's in the input buffer
         while((garbage = getchar()) != '\n' && garbage != EOF);
 
         scanf("%s", inputBuffer);
-        
-        // Implement the spell checker code here..
+
+/***************************************
+ * Implement the spell checker code here..
+ * ************************************/
+
           //get clean word
         size = 0;
         while(inputBuffer[size] != '\n'){
            size++;
         }
         size++;
-        word = malloc(sizeof(char) * (size);
-        for (int i = 0; i < size; i++) {
+        word = malloc(sizeof(char) * (size));
+        for (int i = 0; i < size; i++) { 
           word[i] = inputBuffer[i];
             //clear the buffer
           inputBuffer[i] = 0;
@@ -295,15 +314,14 @@ int main(int argc, const char** argv)
 
             printf("Did you mean: ");
             printQ(levenshteinQ);
-          
-          if (strcmp(word, "quit") == 0)
-          {
+            destroyQ(levenshteinQ);
+          } 
+          if (strcmp(word, "quit") == 0) {
               quit = 1;
           }
       }
         free(word);
+        hashMapDelete(map);
     }
-    
-    hashMapDelete(map);
     return 0;
 }
